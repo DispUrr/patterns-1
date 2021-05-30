@@ -65,7 +65,6 @@ public class CardDeliveryTest {
         $("[data-test-id=date] input").setValue("");
         $("[data-test-id=name] input").setValue("");
         $("[data-test-id=phone] input").setValue("");
-        $("[data-test-id=agreement]").click();
         boolean exists = $("[data-test-id=city].input_invalid").exists();
     }
     // Не заполнено ФИ
@@ -141,7 +140,6 @@ public class CardDeliveryTest {
         $("[data-test-id=date] input").setValue(date);
         $("[data-test-id=name] input").setValue(user.getName());
         $("[data-test-id=phone] input").setValue(user.getPhone());
-        $("[data-test-id=agreement]").click();
         boolean exists = $("[data-test-id=agreement].input_invalid").exists();
     }
 
