@@ -66,7 +66,6 @@ public class CardDeliveryTest {
         $("[data-test-id=name] input").setValue("");
         $("[data-test-id=phone] input").setValue("");
         $("[data-test-id=agreement]").click();
-        $(".button").click();
         boolean exists = $("[data-test-id=city].input_invalid").exists();
     }
     // Не заполнено ФИ
