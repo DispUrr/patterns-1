@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Keys;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -15,83 +16,73 @@ public class CardDeliveryTest {
 
     private DataGenerator.User user;
 
+    private final DataGenerator dataGenerator = new DataGenerator();
+
     @BeforeEach
     void setUp() {
         open("http://localhost:9999");
         user = DataGenerator.getUserInfo();
+
     }
 
     // данные корректны, встреча запланирована
     @Test
     void shouldTestDeliveryCardFirst() {
-        String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $("[data-test-id=city] input").setValue(user.getCity());
         $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
-        $("[data-test-id=date] input").setValue(date);
+        $("[data-test-id=date] input").setValue(dataGenerator.generateDate(3));
         $("[data-test-id=name] input").setValue(user.getName());
         $("[data-test-id=phone] input").setValue(user.getPhone());
         $("[data-test-id=agreement]").click();
         $(".button").click();
-        $(byText("Успешно!")).waitUntil(visible, 15000);
-        boolean exists = $("[data-test-id=success-notification] .notification__content").exists();
+        $(byText("Успешно!")).shouldBe(visible, Duration.ofSeconds(15));
+        $("[data-test-id=success-notification] .notification__content").shouldHave(exactText("Встреча успешно запланирована на " + dataGenerator.generateDate(3)));
     }
     // данные корректны, успешное перепланирование
     @Test
     void shouldTestDeliveryCardSameDate() {
-        String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $("[data-test-id=city] input").setValue(user.getCity());
         $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
-        $("[data-test-id=date] input").setValue(date);
+        $("[data-test-id=date] input").setValue(dataGenerator.generateDate(3));
         $("[data-test-id=name] input").setValue(user.getName());
         $("[data-test-id=phone] input").setValue(user.getPhone());
         $("[data-test-id=agreement]").click();
         $(".button").click();
-        $(byText("Успешно!")).waitUntil(visible, 15000);
-        boolean exists = $("[data-test-id=success-notification].notification__content").exists();
+        $(byText("Успешно!")).shouldBe(visible, Duration.ofSeconds(15));
+        $(".notification__content").shouldHave(exactText("Встреча успешно запланирована на " + dataGenerator.generateDate(3)));
         $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
         String date1 = LocalDate.now().plusDays(4).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        $("[data-test-id=date] input").setValue(date1);
+        $("[data-test-id=date] input").setValue(dataGenerator.generateDate(4));;
         $$("button").find(exactText("Запланировать")).click();
         $(byText("Необходимо подтверждение")).shouldBe(visible);
         $$("button").find(exactText("Перепланировать")).click();
-        $(byText("Успешно!")).waitUntil(visible, 15000);
-        boolean exists1 = $("[data-test-id=success-notification].notification__content").exists();
+        $(byText("Успешно!")).shouldBe(visible, Duration.ofSeconds(15));
+        $(".notification__content").shouldHave(exactText("Встреча успешно запланирована на " + dataGenerator.generateDate(4)));
     }
-    // поля не заполнены, чек-бокс не отмечен
-    @Test
-    void shouldTestDeliveryCardWithoutDataAndAgreement() {
-        $("[data-test-id=city] input").setValue("");
-        $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
-        $("[data-test-id=date] input").setValue("");
-        $("[data-test-id=name] input").setValue("");
-        $("[data-test-id=phone] input").setValue("");
-        boolean exists = $("[data-test-id=city].input_invalid").exists();
-    }
+
     // Не заполнено ФИ
     @Test
     void shouldTestDeliveryCardWithoutName() {
-        String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $("[data-test-id=city] input").setValue(user.getCity());
         $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
-        $("[data-test-id=date] input").setValue(date);
+        $("[data-test-id=date] input").setValue(dataGenerator.generateDate(3));
         $("[data-test-id=name] input").setValue("");
         $("[data-test-id=phone] input").setValue(user.getPhone());
         $("[data-test-id=agreement]").click();
         $(".button").click();
-        boolean exists = $("[data-test-id=name].input_invalid").exists();
+        $("[data-test-id=name] .input__sub").shouldHave(exactText("Поле обязательно для заполнения"));
     }
     // Не заполнен номер
     @Test
     void shouldTestDeliveryCardWithoutPhone() {
-        String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $("[data-test-id=city] input").setValue(user.getCity());
         $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
-        $("[data-test-id=date] input").setValue(date);
+        $("[data-test-id=date] input").setValue(dataGenerator.generateDate(3));
         $("[data-test-id=name] input").setValue(user.getName());
         $("[data-test-id=phone] input").setValue("");
         $("[data-test-id=agreement]").click();
         $(".button").click();
-        boolean exists = $("[data-test-id=phone].input_invalid").exists();
+        $("[data-test-id=phone] .input__sub").shouldHave(exactText("Поле обязательно для заполнения"));
     }
     // Не заполнена дата
     @Test
@@ -103,33 +94,31 @@ public class CardDeliveryTest {
         $("[data-test-id=phone] input").setValue(user.getPhone());
         $("[data-test-id=agreement]").click();
         $(".button").click();
-        boolean exists = $("[data-test-id=date] .input_invalid").exists();
+        $("[data-test-id=date] .input__sub").shouldHave(exactText("Неверно введена дата"));
     }
     // Некорректный город, остальные поля заполнены корректно
     @Test
     void shouldTestDeliveryCardIncorrectCity() {
-        String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $("[data-test-id=city] input").setValue("Минск");
         $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
-        $("[data-test-id=date] input").setValue(date);
+        $("[data-test-id=date] input").setValue(dataGenerator.generateDate(3));
         $("[data-test-id=name] input").setValue(user.getName());
         $("[data-test-id=phone] input").setValue(user.getPhone());
         $("[data-test-id=agreement]").click();
         $(".button").click();
-        boolean exists = $("[data-test-id=city].input_invalid").exists();
+        $("[data-test-id=city] .input__sub").shouldHave(exactText("Доставка в выбранный город недоступна"));
     }
     // Дата в прошлом
     @Test
     void shouldTestDeliveryCardDateInPast() {
-        String date = LocalDate.now().minusDays(2).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $("[data-test-id=city] input").setValue(user.getCity());
         $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
-        $("[data-test-id=date] input").setValue(date);
+        $("[data-test-id=date] input").setValue(dataGenerator.generateDate(-3));
         $("[data-test-id=name] input").setValue(user.getName());
         $("[data-test-id=phone] input").setValue(user.getPhone());
         $("[data-test-id=agreement]").click();
         $(".button").click();
-        $("[data-test-id=date] .input_invalid").shouldHave(exactText("Заказ на выбранную дату невозможен"));
+        $("[data-test-id=date] .input__sub").shouldHave(exactText("Заказ на выбранную дату невозможен"));
     }
     // Чек-бокс не отмечен
     @Test
@@ -140,7 +129,8 @@ public class CardDeliveryTest {
         $("[data-test-id=date] input").setValue(date);
         $("[data-test-id=name] input").setValue(user.getName());
         $("[data-test-id=phone] input").setValue(user.getPhone());
-        boolean exists = $("[data-test-id=agreement].input_invalid").exists();
+        $("[data-test-id=agreement] .checkbox__text")
+                .shouldHave(exactText("Я соглашаюсь с условиями обработки и использования моих персональных данных"));
     }
 
 

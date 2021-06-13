@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 public class DataGenerator {
 
@@ -27,6 +24,9 @@ public class DataGenerator {
                 faker.phoneNumber().phoneNumber(),
                 faker.address().cityName()
         );
+    }
+    public String generateDate(int days) {
+        return LocalDate.now().plusDays(days).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
     }
 
 }
